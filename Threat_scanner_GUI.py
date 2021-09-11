@@ -164,16 +164,22 @@ class Threat_Scanner:
                 break
 
     def file_scan_request(self):
-        from pprint import pprint
         # Not Completed Yet
         """ """
-        file_path = self.file_path
-        virus_total = Virustotal(API_KEY="5b34fd9e6afc7c01df9f9f9092a5b2d690ae3ae0d676e04ad4ab5df910567e49")
-        files = {"file": (os.path.basename(file_path), open(os.path.abspath(file_path), "rb"))}
-        response = virus_total.request("file/scan", files=files, method="POST")
-        # Print JSON response from the API
-        pprint(response.json())
-
-
+        try:
+            file_path = self.file_path
+            virus_total = Virustotal(API_KEY="5b34fd9e6afc7c01df9f9f9092a5b2d690ae3ae0d676e04ad4ab5df910567e49")
+            files = {"file": (os.path.basename(file_path), open(os.path.abspath(file_path), "rb"))}
+            response = virus_total.request("file/scan", files=files, method="POST")
+            result = response.json()
+            scan_id = result['sha256']
+            resp = virus_total.request("file/report", {"resource": scan_id})
+            resp_code = resp.response_code
+            if resp_code == "-2":
+                messagebox.showinfo("Queued ", "Your resource is queued for analysis. Come back later !")
+            print(resp.json())
+        except Exception:
+            messagebox.showerror("Error !", "API Request Exceeded, Try again later.")
+            self.Progress1["value"] = 0
 
 Threat_Scanner()
